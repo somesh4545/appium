@@ -1,0 +1,6 @@
+{
+	"require": [ "@babel/register", "./helpers/appiumServiceHook.js"],
+	"timeout": 1800000,
+	"parallel": false,
+	"reporter": "allure-mocha"
+}

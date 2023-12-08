@@ -1,0 +1,8 @@
+{
+	"QA3": {
+		"schema": "ALPHA"
+	},
+	"PRODUCTION": {
+		"schema": "RELEASE"
+	}
+}

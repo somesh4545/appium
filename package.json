@@ -1,0 +1,37 @@
+{
+  "name": "project-appium-mocha-ios-android-sample",
+  "version": "1.0.0",
+  "description": "Project demonstrating Appium Mocha Setup",
+  "scripts": {
+    "open-allure": "./node_modules/.bin/allure generate allure-results --clean && allure open",
+    "test": "./node_modules/.bin/mocha",
+    "full-ios": "./node_modules/.bin/mocha 'tests/contactsAppiOS' 'tests/testAppiOS'",
+    "full-android": "./node_modules/.bin/mocha 'tests/testAppAndroid'"
+  },
+  "engines": {
+    "node": ">=10",
+    "npm": ">=6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.5",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/register": "^7.21.0",
+    "allure-commandline": "^2.22.0",
+    "allure-mocha": "^2.2.1",
+    "appium": "2.0.1",
+    "appium-uiautomator2-driver": "2.29.3",
+    "appium-xcuitest-driver": "4.33.0",
+    "axios": "1.6.2",
+    "chai": "4.3.10",
+    "eslint": "8.54.0",
+    "eslint-plugin-mocha": "^10.1.0",
+    "lodash": "4.17.21",
+    "mocha": "10.2.0"
+  },
+  "dependencies": {
+    "form-data": "4.0.0",
+    "protobufjs": "7.2.5",
+    "uuid": "9.0.1",
+    "webdriverio": "8.23.5"
+  }
+}

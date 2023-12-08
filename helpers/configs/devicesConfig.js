@@ -1,0 +1,50 @@
+const DEVICE_IOS_ONE = {
+	DEFAULT_IOS_DEVICE1_NAME: 'iPhone 12',
+	get iOSDevice() {
+		return process.env.APPIUM_IOS_DEVICE1_NAME || this.DEFAULT_IOS_DEVICE1_NAME;
+	},
+	DEFAULT_IOS_PLATFORM1_VERSION: '16.2',
+	get iOSPlatformVersion() {
+		return process.env.APPIUM_IOS_PLATFORM1_VERSION || this.DEFAULT_IOS_PLATFORM1_VERSION;
+	}
+};
+
+const DEVICE_IOS_TWO = {
+	DEFAULT_IOS_DEVICE2_NAME: 'iPhone 12',
+	get iOSDevice() {
+		return process.env.APPIUM_IOS_DEVICE2_NAME || this.DEFAULT_IOS_DEVICE2_NAME;
+	},
+	DEFAULT_IOS_PLATFORM2_VERSION: '17.0',
+	get iOSPlatformVersion() {
+		return process.env.APPIUM_IOS_PLATFORM2_VERSION || this.DEFAULT_IOS_PLATFORM2_VERSION;
+	}
+};
+
+const DEVICE_ANDROID_ONE = {
+	DEFAULT_ANDROID_DEVICE1_NAME: 'emulator-5554',
+	get androidDevice() {
+		return process.env.APPIUM_ANDROID_DEVICE1_NAME || this.DEFAULT_ANDROID_DEVICE1_NAME;
+	},
+	DEFAULT_ANDROID_PLATFORM1_VERSION: '12.0',
+	get androidPlatformVersion() {
+		return process.env.APPIUM_ANDROID_PLATFORM1_VERSION || this.DEFAULT_ANDROID_PLATFORM1_VERSION;
+	}
+};
+
+const DEVICE_ANDROID_TWO = {
+	DEFAULT_ANDROID_DEVICE2_NAME: 'emulator-5554',
+	get androidDevice() {
+		return process.env.APPIUM_ANDROID_DEVICE2_NAME || this.DEFAULT_ANDROID_DEVICE2_NAME;
+	},
+	DEFAULT_ANDROID_PLATFORM2_VERSION: '12.0',
+	get androidPlatformVersion() {
+		return process.env.APPIUM_ANDROID_PLATFORM2_VERSION || this.DEFAULT_ANDROID_PLATFORM2_VERSION;
+	}
+};
+
+export {
+	DEVICE_IOS_ONE,
+	DEVICE_IOS_TWO,
+	DEVICE_ANDROID_ONE,
+	DEVICE_ANDROID_TWO
+};

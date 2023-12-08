@@ -1,0 +1,133 @@
+def ZC_APP_PATH= 'xxx.apk'
+def ZC_PROD_APP_PATH= 'xxx.apk'
+def ZC_DATA_JSON = 'xxx.json'
+def AGENT_NAME = 'xxx'
+def ANDROID_SDK_ROOT = 'xxx/Library/Android/sdk'
+def EMULATOR_NAME = 'Pixel4a31'
+def FILTER = '' // Tests filters provided as Mocha option --grep
+def EXCLUDED_TESTS = '' // Test files to be excluded provided as string separated by coma and space, i.e '**/**/**/xxx.test.js, **/**/**/xxx.test.js'
+def EXCLUDED_OPTION = '' // Tests to be excluded provided as Mocha option --ignore
+
+if (params.ANDROID_PLATFORM == '11') {
+    EMULATOR_NAME = 'Pixel4a30'
+}
+
+if (params.TARGET_ENVIRONMENT == 'PRODUCTION') {
+  ZC_APP_PATH = ZC_PROD_APP_PATH
+  if (params.TEST_NAME_FILTER) {
+      FILTER = '-g ' + params.TEST_NAME_FILTER
+  } else {
+      FILTER = '-g @prod'
+  }
+} else {
+    if (params.TEST_NAME_FILTER) {
+        FILTER = '-g ' + params.TEST_NAME_FILTER
+    }
+}
+
+if (EXCLUDED_TESTS) {
+    EXCLUDED_OPTION = '--ignore ' + EXCLUDED_TESTS.split(', ').join(' --ignore ')
+}
+
+pipeline {
+	agent {
+            label AGENT_NAME
+    }
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 3, unit: 'HOURS')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+	parameters {
+		string(name: 'TARGET_ENVIRONMENT', defaultValue: 'QA3', description: 'The target environment to execute tests against.')
+	    string(name: 'ANDROID_DEVICE', defaultValue: 'Pixel 4a', description: 'Currently this field gets ignored, it will run whatever is on in the emulator (Pixel 4a)')
+	    string(name: 'ANDROID_PLATFORM', defaultValue: '12', description: 'The target platform version to test against.')
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Specify which branch to build')
+	    string(name: 'TEST_NAME_FILTER', defaultValue: '', description: 'Filter which specific suite|describe and/or it|test to run by passing the name of the suite/test, the search pattern is interpreted as regular expression. Ex: \'Validate expandable lists\' or \'@smoke\'')
+	}
+	environment {
+        SLACK_CHANNEL               = 'XXX' // "#alert-qa-mobile-automation"
+        PLATFORM                    = 'OSX'
+        REVISION_NUMBER             = '1.0.0'
+    }
+	stages {
+	    stage("ZC-Mac-Tests"){
+			stages{
+                stage('Clean Workspace') {
+                    steps {
+                        cleanWs()
+                    }
+                }
+                stage("Checkout") {
+                    steps {
+                        git branch: params.BRANCH,
+                            credentialsId: 'github-authentication',
+                            url: 'https://github.com/xxx/xxx.git'
+                    }
+                }
+                stage("Copy Over Requirements") {
+                    steps {
+                        sh "cp $ZC_DATA_JSON helpers"
+                    }
+                }
+                stage("Run Tests") {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                          sh "$ANDROID_SDK_ROOT/platform-tools/adb start-server"
+                          sh "$ANDROID_SDK_ROOT/emulator/emulator -avd $EMULATOR_NAME &"
+                          sh "npm install"
+                          sh "ANDROID_SDK_ROOT='$ANDROID_SDK_ROOT' ENVIRONMENT=${params.TARGET_ENVIRONMENT} PLATFORM=Android APPIUM_ANDROID_APP_PATH='$ZC_APP_PATH' APPIUM_ANDROID_PLATFORM_VERSION='${params.ANDROID_PLATFORM}' APPIUM_ANDROID_DEVICE_NAME='${params.ANDROID_DEVICE}' npm run full-android -- $FILTER -- $EXCLUDED_OPTION"
+                        }
+                    }
+                }
+                stage('Create Allure Report') {
+                    steps {
+                        script {
+                            echo "Create Allure Report & Slack Notification"
+                            def allure_results = []
+                            allure_results.add([path: './allure-results'])
+
+                            allure([
+                                includeProperties: false,
+                                jdk: '',
+                                properties: [],
+                                reportBuildPolicy: 'ALWAYS',
+                                results: allure_results
+                            ])
+
+                            def test_results = getTestResults()
+                            echo "test results:\n${test_results.toMapString()}"
+                        }
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: "allure-report/**", fingerprint: true
+                            sh "$ANDROID_SDK_ROOT/platform-tools/adb emu kill 2> /dev/null"
+                            sh "$ANDROID_SDK_ROOT/platform-tools/adb kill-server 2> /dev/null"
+                            sh "pgrep qemu | xargs kill -9"
+                            sh "rm helpers/xxx.json"
+                        }
+                    }
+                }
+            }
+        }
+	}
+}
+def getTestResults() {
+    def results = [:]
+    def historyTrendResults  =  readJSON file: "allure-report/history/history-trend.json"
+    def passRate = 0
+
+    results['total'] = historyTrendResults[0].data.total
+    results['passed'] = historyTrendResults[0].data.passed
+    results['failed'] = historyTrendResults[0].data.failed
+    results['skipped'] = historyTrendResults[0].data.skipped
+    results['duration'] = currentBuild.durationString.replace(' and counting', '')
+
+    if(results['total']-results['skipped'] != 0) {
+        passRate = (double)results['passed'] * 100/(results['total'] - results['skipped'])
+    }
+    results['passRate'] = Math.round((double)passRate*100)/100
+
+    return results
+}
