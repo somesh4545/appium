@@ -6,7 +6,10 @@
     "open-allure": "./node_modules/.bin/allure generate allure-results --clean && allure open",
     "test": "./node_modules/.bin/mocha",
     "full-ios": "./node_modules/.bin/mocha 'tests/contactsAppiOS' 'tests/testAppiOS'",
-    "full-android": "./node_modules/.bin/mocha 'tests/testAppAndroid'"
+    "full-android": "./node_modules/.bin/mocha 'tests/testAppAndroid'",
+    "parallel-ios": "./node_modules/.bin/mocha 'tests/contactsAppiOS' 'tests/testAppiOS' --parallel --ios-devices 'iPhone12 16.2,iPhone14 17.0'",
+    "parallel-android": "./node_modules/.bin/mocha 'tests/testAppAndroid' --parallel --android-devices 'Pixel4a 12.0,Nexus 6 11.0'",
+    "parallel-ios-android": "./node_modules/.bin/mocha 'tests/contactsAppiOS' 'tests/testAppiOS' 'tests/testAppAndroid' --parallel --ios-devices 'iPhone14 17.0' --android-devices 'Pixel4a 12.0'"
   },
   "engines": {
     "node": ">=10",
